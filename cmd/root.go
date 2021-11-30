@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -42,36 +43,53 @@ func init() {
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/appupgrade.yaml)")
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.appupgrade.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
+	// Find home directory.
+	home, err := homedir.Dir()
+	if err != nil {
+		log.WithError(err).Fatal("Couldn't find home directory")
+	}
+
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
-		// Find home directory.
-		home, err := homedir.Dir()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		// Search config in home directory with name ".appupgrade" (without extension).
-		viper.AddConfigPath(home)
-		viper.SetConfigName(".appupgrade")
+		viper.AddConfigPath(home)         // adding home directory as first search path
+		viper.AddConfigPath(".")          // also look in the working directory
+		viper.SetConfigName("appupgrade") // name the config file (without extension)
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
 
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
+	//	Set our defaults
+	viper.SetDefault("server.port", "3007")
+	viper.SetDefault("server.allowed-origins", "*")
+	viper.SetDefault("log.level", "info")
+
+	// If a config file is found, read it in
+	viper.ReadInConfig()
+
+	//	Set the log level based on configuration:
+	loglevel := viper.GetString("log.level")
+	switch loglevel {
+	case "fatal":
+		log.SetLevel(log.FatalLevel)
+	case "error":
+		log.SetLevel(log.ErrorLevel)
+	case "warn":
+		log.SetLevel(log.WarnLevel)
+	case "info":
+		log.SetLevel(log.InfoLevel)
+	case "debug":
+		log.SetLevel(log.DebugLevel)
+	case "trace":
+		log.SetLevel(log.TraceLevel)
+	default:
+		log.SetLevel(log.WarnLevel)
 	}
 }
