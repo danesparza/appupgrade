@@ -1,0 +1,8 @@
+server:
+  port: 3007
+  allowed-origins: "*"
+log:
+  level: info
+packages: # Replace this list with packages / mapped Github repos that you want to be able to upgrade
+  daydash: https://github.com/danesparza/daydash
+  cloudjournal: https://github.com/danesparza/cloudjournal

@@ -1,0 +1,12 @@
+[Unit]
+Description=appupgrade service
+
+[Service]
+User=root
+Group=root
+ExecStart=/usr/bin/appupgrade start --config=/etc/appupgrade/config.yaml
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
