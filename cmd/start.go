@@ -34,6 +34,8 @@ func start(cmd *cobra.Command, args []string) {
 	for k, v := range monitorPackages {
 		fmt.Printf("%s -> %s\n", k, v)
 	}
+
+	//	We could use https://github.com/alexfacciorusso/ghurlparse to parse the github urls
 }
 
 func init() {
