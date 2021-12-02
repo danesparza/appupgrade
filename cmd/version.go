@@ -15,7 +15,7 @@ var versionCmd = &cobra.Command{
 	Short: "Shows the version information",
 	Run: func(cmd *cobra.Command, args []string) {
 		//	Show the version number
-		fmt.Printf("\ncloudjournal version %s", BuildVersion)
+		fmt.Printf("\nappupgrade version %s", BuildVersion)
 
 		//	Show the commitID if available:
 		if CommitID != "" {
