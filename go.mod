@@ -3,6 +3,7 @@ module github.com/danesparza/appupgrade
 go 1.17
 
 require (
+	github.com/alexfacciorusso/ghurlparse v0.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/hashicorp/go-version v1.3.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
