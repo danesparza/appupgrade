@@ -23,7 +23,18 @@ type VersionReport struct {
 	UpgradeAvailable  bool   `json:"upgradeavailable"` // 'true' if there is an upgrade available
 }
 
-// GetVersionInfoForPackage gets the version information for the given package
+// GetVersionInfoForPackage godoc
+// @Summary gets the version information for the given package
+// @Description gets the version information for the given package
+// @Tags package
+// @Accept  json
+// @Produce  json
+// @Param package path string true "The package to get information for"
+// @Success 200 {object} api.SystemResponse
+// @Failure 404 {object} api.ErrorResponse
+// @Failure 424 {object} api.ErrorResponse
+// @Failure 500 {object} api.ErrorResponse
+// @Router /package/{package}/info [get]
 func (service Service) GetVersionInfoForPackage(rw http.ResponseWriter, req *http.Request) {
 
 	retval := VersionReport{}

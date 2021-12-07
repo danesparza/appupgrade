@@ -1,0 +1,57 @@
+basePath: /v1
+definitions:
+  api.ErrorResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  api.SystemResponse:
+    properties:
+      data:
+        type: object
+      message:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: A sidecar REST service to upgrade a local app to the latest version
+  license:
+    name: MIT
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: appupgrade
+  version: "1.0"
+paths:
+  /package/{package}/info:
+    get:
+      consumes:
+      - application/json
+      description: gets the version information for the given package
+      parameters:
+      - description: The package to get information for
+        in: path
+        name: package
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SystemResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "424":
+          description: Failed Dependency
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: gets the version information for the given package
+      tags:
+      - package
+swagger: "2.0"

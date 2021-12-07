@@ -10,11 +10,13 @@ import (
 	"time"
 
 	"github.com/danesparza/appupgrade/api"
+	_ "github.com/danesparza/appupgrade/docs" // swagger docs location
 	"github.com/danesparza/appupgrade/system"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 // startCmd represents the start command
@@ -61,6 +63,9 @@ func start(cmd *cobra.Command, args []string) {
 	//	PACKAGE ROUTES
 	restRouter.HandleFunc("/v1/package/{package}/info", apiService.GetVersionInfoForPackage).Methods("GET")    // Get version data
 	restRouter.HandleFunc("/v1/package/{package}/update", apiService.GetVersionInfoForPackage).Methods("POST") // Update app
+
+	//	SWAGGER ROUTES
+	restRouter.PathPrefix("/v1/swagger").Handler(httpSwagger.WrapHandler)
 
 	//	Format the bound interface:
 	formattedServerInterface := viper.GetString("server.bind")
