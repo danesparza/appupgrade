@@ -58,8 +58,9 @@ func start(cmd *cobra.Command, args []string) {
 	//	Create a router and setup our REST and UI endpoints...
 	restRouter := mux.NewRouter()
 
-	//	VERSION ROUTES
-	restRouter.HandleFunc("/v1/versioninfo/{package}", apiService.GetVersionInfoForPackage).Methods("GET") // Get version data
+	//	PACKAGE ROUTES
+	restRouter.HandleFunc("/v1/package/{package}/info", apiService.GetVersionInfoForPackage).Methods("GET")    // Get version data
+	restRouter.HandleFunc("/v1/package/{package}/update", apiService.GetVersionInfoForPackage).Methods("POST") // Update app
 
 	//	Format the bound interface:
 	formattedServerInterface := viper.GetString("server.bind")
