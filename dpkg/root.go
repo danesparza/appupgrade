@@ -35,3 +35,55 @@ func GetCurrentVersionForPackage(packageName string) (string, error) {
 
 	return retval, nil
 }
+
+// RemovePackage removes the given package
+func RemovePackage(packageName string) (string, error) {
+	retval := ""
+
+	log.WithFields(log.Fields{
+		"package": packageName,
+	}).Debug("requested package remove")
+
+	cmdOutput, err := exec.Command("dpkg", "-r", packageName).CombinedOutput()
+
+	if err != nil {
+		log.WithError(err).Error("problem running dpkg remove")
+		return retval, err
+	}
+
+	//	Remove leading/trailing whitespace if it exists:
+	retval = strings.TrimSpace(string(cmdOutput))
+
+	log.WithFields(log.Fields{
+		"package":   packageName,
+		"cmdOutput": cmdOutput,
+	}).Debug("removed package")
+
+	return retval, nil
+}
+
+// InstallPackage installs the given deb file at the package path
+func InstallPackage(packagePath string) (string, error) {
+	retval := ""
+
+	log.WithFields(log.Fields{
+		"package": packagePath,
+	}).Debug("requested package installation")
+
+	cmdOutput, err := exec.Command("dpkg", "-i", packagePath).CombinedOutput()
+
+	if err != nil {
+		log.WithError(err).Error("problem running dpkg install")
+		return retval, err
+	}
+
+	//	Remove leading/trailing whitespace if it exists:
+	retval = strings.TrimSpace(string(cmdOutput))
+
+	log.WithFields(log.Fields{
+		"package":   packagePath,
+		"cmdOutput": cmdOutput,
+	}).Debug("installed package")
+
+	return retval, nil
+}

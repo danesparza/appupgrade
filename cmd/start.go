@@ -91,6 +91,7 @@ func start(cmd *cobra.Command, args []string) {
 
 func handleSignals(ctx context.Context, sigs <-chan os.Signal, cancel context.CancelFunc) {
 	select {
+
 	case <-ctx.Done():
 	case sig := <-sigs:
 		switch sig {
@@ -105,6 +106,11 @@ func handleSignals(ctx context.Context, sigs <-chan os.Signal, cancel context.Ca
 		}
 
 		cancel()
+
+		//	Clean up the tmp directory area where we store .deb files?
+		//	It sounds like /tmp is cleared on reboot, and files are automatically removed after 10 days.
+		//	So I'm not sure we need to do anything -- we can just let the OS take care of it.
+
 		os.Exit(0)
 	}
 }

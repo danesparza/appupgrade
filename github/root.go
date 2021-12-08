@@ -3,6 +3,8 @@ package github
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
@@ -149,4 +151,37 @@ func GetVersionsForRepo(name, repo string) ([]Release, error) {
 	}
 
 	return retval, nil
+}
+
+// DownloadFile downloads a remote file to a temporary location and returns the temporary location
+func DownloadFile(remoteUrl string) (string, error) {
+
+	//	Get a temporary file reference:
+	tempPathLocation, err := ioutil.TempFile("appupgrade", "*.deb")
+	if err != nil {
+		log.WithError(err).Error("problem creating temp file")
+		return "", err
+	}
+
+	//	Download the remote url to the temp file:
+	resp, err := http.Get(remoteUrl)
+	if err != nil {
+		log.WithError(err).WithFields(log.Fields{
+			"remoteUrl": remoteUrl,
+		}).Error("problem downloading remote file")
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	//	Save the downloaded file to the temp file:
+	_, err = io.Copy(tempPathLocation, resp.Body)
+	if err != nil {
+		log.WithError(err).WithFields(log.Fields{
+			"remoteUrl": remoteUrl,
+		}).Error("problem saving remote file")
+		return "", err
+	}
+
+	//	Return the local file path that contains the remote url contents
+	return tempPathLocation.Name(), nil
 }
