@@ -61,8 +61,8 @@ func start(cmd *cobra.Command, args []string) {
 	restRouter := mux.NewRouter()
 
 	//	PACKAGE ROUTES
-	restRouter.HandleFunc("/v1/package/{package}/info", apiService.GetVersionInfoForPackage).Methods("GET")    // Get version data
-	restRouter.HandleFunc("/v1/package/{package}/update", apiService.GetVersionInfoForPackage).Methods("POST") // Update app
+	restRouter.HandleFunc("/v1/package/{package}/info", apiService.GetVersionInfoForPackage).Methods("GET")                     // Get version data
+	restRouter.HandleFunc("/v1/package/{package}/updatetoversion/{version}", apiService.UpdatePackageToVersion).Methods("POST") // Update app to the specified version
 
 	//	SWAGGER ROUTES
 	restRouter.PathPrefix("/v1/swagger").Handler(httpSwagger.WrapHandler)
