@@ -55,8 +55,8 @@ func RemovePackage(packageName string) (string, error) {
 	retval = strings.TrimSpace(string(cmdOutput))
 
 	log.WithFields(log.Fields{
-		"package":   packageName,
-		"cmdOutput": cmdOutput,
+		"package": packageName,
+		"output":  retval,
 	}).Debug("removed package")
 
 	return retval, nil
@@ -81,8 +81,8 @@ func InstallPackage(packagePath string) (string, error) {
 	retval = strings.TrimSpace(string(cmdOutput))
 
 	log.WithFields(log.Fields{
-		"package":   packagePath,
-		"cmdOutput": cmdOutput,
+		"package": packagePath,
+		"output":  retval,
 	}).Debug("installed package")
 
 	return retval, nil

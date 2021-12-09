@@ -17,11 +17,12 @@ import (
 
 // VersionReport defines version information for a given package
 type VersionReport struct {
-	Name              string `json:"name"`             // The package name
-	InstalledVersion  string `json:"installedversion"` // The current (installed) version of the package
-	LatestVersion     string `json:"latestversion"`    // The latest available version of the package
-	UpdateDownloadUrl string `json:"downloadurl"`      // The url to get the latest update
-	UpgradeAvailable  bool   `json:"upgradeavailable"` // 'true' if there is an upgrade available
+	Name              string            `json:"name"`              // The package name
+	InstalledVersion  string            `json:"installedversion"`  // The current (installed) version of the package
+	LatestVersion     string            `json:"latestversion"`     // The latest available version of the package
+	UpdateDownloadUrl string            `json:"latestdownloadurl"` // The url to get the latest update
+	PreviousVersions  map[string]string `json:"previousversions"`  // Previous versions available
+	UpgradeAvailable  bool              `json:"upgradeavailable"`  // 'true' if there is an upgrade available
 }
 
 // GetVersionInfoForPackage godoc
@@ -39,6 +40,7 @@ type VersionReport struct {
 func (service Service) GetVersionInfoForPackage(rw http.ResponseWriter, req *http.Request) {
 
 	retval := VersionReport{}
+	retval.PreviousVersions = make(map[string]string) // Initialize the previous versions map
 
 	//	Parse the request
 	vars := mux.Vars(req)
@@ -74,10 +76,6 @@ func (service Service) GetVersionInfoForPackage(rw http.ResponseWriter, req *htt
 		}
 
 		retval.InstalledVersion = currentVersion
-		log.WithFields(log.Fields{
-			"package":        packageName,
-			"currentVersion": currentVersion,
-		}).Debug("Found current version")
 
 		//	... parse the repo information
 		valid, user, repo := ghurlparse.DestructureRepoURL(fmt.Sprintf("%s", packageRepo))
@@ -103,6 +101,11 @@ func (service Service) GetVersionInfoForPackage(rw http.ResponseWriter, req *htt
 					"version":    releases[0].Version,
 					"releaseUrl": releases[0].DownloadUrl,
 				}).Debug("Found latest release for package.")
+
+				//	Set previous versions as well
+				for _, v := range releases {
+					retval.PreviousVersions[v.Version] = v.DownloadUrl
+				}
 			}
 
 			//	See if the latest version is greater than the installed version.  If so, an update is available
@@ -142,12 +145,6 @@ func (service Service) GetVersionInfoForPackage(rw http.ResponseWriter, req *htt
 		sendErrorResponse(rw, fmt.Errorf("not monitoring the package %s", packageName), http.StatusNotFound)
 		return
 	}
-
-	//	Log our found information
-	log.WithFields(log.Fields{
-		"route":       req.URL.RequestURI(),
-		"versionInfo": retval,
-	}).Debug("returning version response")
 
 	//	Our return value
 	response := SystemResponse{
@@ -277,7 +274,7 @@ func (service Service) UpdatePackageToVersion(rw http.ResponseWriter, req *http.
 					}
 
 					//	Remove the previous package
-					rpkgOut, err := dpkg.RemovePackage(packageName)
+					_, err = dpkg.RemovePackage(packageName)
 					if err != nil {
 						log.WithError(err).WithFields(log.Fields{
 							"package": packageName,
@@ -286,13 +283,8 @@ func (service Service) UpdatePackageToVersion(rw http.ResponseWriter, req *http.
 						return
 					}
 
-					log.WithFields(log.Fields{
-						"package": packageName,
-						"output":  rpkgOut,
-					}).Debug("Removed package")
-
 					//	Install the new package
-					ipkgOut, err := dpkg.InstallPackage(packageFile)
+					_, err = dpkg.InstallPackage(packageFile)
 					if err != nil {
 						log.WithError(err).WithFields(log.Fields{
 							"package":     packageName,
@@ -301,11 +293,6 @@ func (service Service) UpdatePackageToVersion(rw http.ResponseWriter, req *http.
 						sendErrorResponse(rw, fmt.Errorf("problem installing the package: %s", packageFile), http.StatusInternalServerError)
 						return
 					}
-
-					log.WithFields(log.Fields{
-						"package": packageName,
-						"output":  ipkgOut,
-					}).Debug("Installed package")
 
 					retval = fmt.Sprintf("Installed %s version %s", packageName, reqVersion)
 				}
@@ -316,12 +303,6 @@ func (service Service) UpdatePackageToVersion(rw http.ResponseWriter, req *http.
 		sendErrorResponse(rw, fmt.Errorf("not monitoring the package %s", packageName), http.StatusNotFound)
 		return
 	}
-
-	//	Log our found information
-	log.WithFields(log.Fields{
-		"route":  req.URL.RequestURI(),
-		"retval": retval,
-	}).Debug("returning update package response")
 
 	//	Our return value
 	response := SystemResponse{

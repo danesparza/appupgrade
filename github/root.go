@@ -157,7 +157,7 @@ func GetVersionsForRepo(name, repo string) ([]Release, error) {
 func DownloadFile(remoteUrl string) (string, error) {
 
 	//	Get a temporary file reference:
-	tempPathLocation, err := ioutil.TempFile("appupgrade", "*.deb")
+	tempPathLocation, err := ioutil.TempFile("", "*.deb")
 	if err != nil {
 		log.WithError(err).Error("problem creating temp file")
 		return "", err
