@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 	_ "github.com/danesparza/appupgrade/docs" // swagger docs location
 	"github.com/danesparza/appupgrade/system"
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -67,6 +69,12 @@ func start(cmd *cobra.Command, args []string) {
 	//	SWAGGER ROUTES
 	restRouter.PathPrefix("/v1/swagger").Handler(httpSwagger.WrapHandler)
 
+	// Setup CORS
+	restCorsRouter := cors.New(cors.Options{
+		AllowedOrigins:   strings.Split(viper.GetString("server.allowed-origins"), ","),
+		AllowCredentials: true,
+	}).Handler(restRouter)
+
 	//	Format the bound interface:
 	formattedServerInterface := viper.GetString("server.bind")
 	if formattedServerInterface == "" {
@@ -82,7 +90,7 @@ func start(cmd *cobra.Command, args []string) {
 		log.WithFields(log.Fields{
 			"url": formattedServiceURL,
 		}).Info("Started REST service")
-		log.Printf("[ERROR] %v\n", http.ListenAndServe(viper.GetString("server.bind")+":"+viper.GetString("server.port"), restRouter))
+		log.Printf("[ERROR] %v\n", http.ListenAndServe(viper.GetString("server.bind")+":"+viper.GetString("server.port"), restCorsRouter))
 	}()
 
 	//	Wait for our signal and shutdown gracefully
